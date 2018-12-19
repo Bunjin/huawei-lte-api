@@ -85,27 +85,11 @@ class Sms(ApiGroup):
 
     @authorized_call
     def send_sms(self,
-                 phone_numbers: list,
-                 message: str,
-                 sms_index: int=-1,
-                 sca: str='',
-                 text_mode: TextModeEnum=TextModeEnum.SEVEN_BIT,
-                 from_date: datetime.datetime=datetime.datetime.utcnow()
+                 number,
+                 message,
+                 time
                  ):
-
-        dicttoxml_xargs = {
-            'item_func': lambda x: x[:-1]
-        }
-
-        return self._connection.post('sms/send-sms', {
-            'Index': sms_index,
-            'Phones': phone_numbers,
-            'Sca': sca,
-            'Content': message,
-            'Length': len(message),
-            'Reserved': text_mode.value,
-            'Date': from_date.strftime("%Y-%m-%d %H:%M:%S")
-        }, dicttoxml_xargs=dicttoxml_xargs)
+        return self._connection.postRaw(number, message, time)
 
     def cancel_send(self):
         return self._connection.post('sms/cancel-send', {

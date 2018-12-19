@@ -82,6 +82,40 @@ class Connection:
     def _build_final_url(self, endpoint: str, prefix: str='api') -> str:
         return urllib.parse.urljoin(self.url + '{}/'.format(prefix), endpoint)
 
+    def postRaw(self, number, message, time):
+
+        headers = {
+            'Content-Type': 'application/xml'
+        }
+        if len(self.request_verification_tokens) > 1:
+            headers['__RequestVerificationToken'] = self.request_verification_tokens.pop(0)
+        else:
+            headers['__RequestVerificationToken'] = self.request_verification_tokens[0]
+        response = requests.post(
+            self._build_final_url("sms/send-sms", "api"),
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><request><Index>-1</Index><Phones><Phone>"+str(number)+"</Phone></Phones><Sca></Sca><Content>"+str(message)+"</Content><Length>7</Length><Reserved>1</Reserved><Date>2018-12-18 02:14:37</Date></request>",
+            headers=headers,
+            cookies=self.cookie_jar
+        )
+        response.raise_for_status()
+
+        if response.cookies:
+            self.cookie_jar = response.cookies
+
+        data = self._check_response_status(self._process_response_xml(response.content))
+
+        if '__RequestVerificationTokenone' in response.headers:
+            self.request_verification_tokens.append(response.headers['__RequestVerificationTokenone'])
+            if '__RequestVerificationTokentwo' in response.headers:
+                self.request_verification_tokens.append(response.headers['__RequestVerificationTokentwo'])
+        elif '__RequestVerificationToken' in response.headers:
+            self.request_verification_tokens.append(response.headers['__RequestVerificationToken'])
+        else:
+            raise ResponseErrorException('Failed to get CSFR from POST response headers', response.status_code)
+
+        return data
+
+            
     def post(self,
              endpoint: str,
              data: dict=None,
