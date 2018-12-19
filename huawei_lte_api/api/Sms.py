@@ -85,11 +85,10 @@ class Sms(ApiGroup):
 
     @authorized_call
     def send_sms(self,
-                 number,
-                 message,
-                 time
+                 numbers,
+                 message
                  ):
-        return self._connection.postRaw(number, message, time)
+        return self._connection.postRaw(numbers, message, datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
     def cancel_send(self):
         return self._connection.post('sms/cancel-send', {

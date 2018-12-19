@@ -82,7 +82,7 @@ class Connection:
     def _build_final_url(self, endpoint: str, prefix: str='api') -> str:
         return urllib.parse.urljoin(self.url + '{}/'.format(prefix), endpoint)
 
-    def postRaw(self, number, message, time):
+    def postRaw(self, numbers, message, time):
 
         headers = {
             'Content-Type': 'application/xml'
@@ -93,12 +93,12 @@ class Connection:
             headers['__RequestVerificationToken'] = self.request_verification_tokens[0]
         response = requests.post(
             self._build_final_url("sms/send-sms", "api"),
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><request><Index>-1</Index><Phones><Phone>"+str(number)+"</Phone></Phones><Sca></Sca><Content>"+str(message)+"</Content><Length>7</Length><Reserved>1</Reserved><Date>2018-12-18 02:14:37</Date></request>",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><request><Index>-1</Index><Phones>" + numbers + "</Phones><Sca></Sca><Content>"+str(message)+"</Content><Length>"+str(len(str(message)))+"</Length><Reserved>1</Reserved><Date>" + time + "</Date></request>",
             headers=headers,
             cookies=self.cookie_jar
         )
         response.raise_for_status()
-
+        #2018-12-18 02:14:37
         if response.cookies:
             self.cookie_jar = response.cookies
 
